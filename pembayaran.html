@@ -623,7 +623,7 @@ function calculatePrice() {
         const nominal = uangKasNominal.value;
         const amount = nominal ? parseInt(nominal, 10) : 0;
         if (amount < 5000) {
-            showNotification('Nominal kas minimal Rp 5.000. Silakan masukkan jumlah yang valid.');
+            showNotification('Nominal kas minimal Rp 5.000. Silakan masukkan jumlah yang valid.', 'error');
             return; // Hentikan submit kalau tidak valid
         }
     }
