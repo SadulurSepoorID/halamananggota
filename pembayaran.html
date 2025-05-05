@@ -319,7 +319,7 @@
                         <option value="" selected disabled>Pilih Jenis Pembayaran</option>
                         <option value="kemeja">Kemeja</option>
                         <option value="kta">KTA</option>
-                        <option value="uang_kas">Uang Kas</option>
+                        <option value="uang kas">Uang Kas</option>
                     </select>
                 </div>
                 
@@ -390,8 +390,8 @@
                     <div class="file-info" id="fileInfo"></div>
                 </div>
 
-                <button type="submit" class="btn" id="submitBtn" disabled>Kirim Pesanan</button>
-                <div class="loading" id="loading">Mengirim pesanan...</div>
+                <button type="submit" class="btn" id="submitBtn" disabled>Kirim Pembayaran</button>
+                <div class="loading" id="loading">Mengirim pembayaran...</div>
             </form>
         </div>
     </div>
@@ -531,7 +531,7 @@ uangKasNominal.addEventListener('input', calculatePrice);
         kemejaTypeGroup.style.display = 'block';
     } else if (selectedProduct === 'kta') {
         ktaTypeGroup.style.display = 'block';
-    } else if (selectedProduct === 'uang_kas') {
+    } else if (selectedProduct === 'uang kas') {
         uangKasGroup.style.display = 'block';
     }
     
@@ -576,7 +576,7 @@ function calculatePrice() {
             const isLargeSize = ukuran === 'XXL' || ukuran === 'XXXL';
             price = PRICES.kemeja[kemejaType][isLargeSize ? 'large' : 'normal'];
         }
-    } else if (selectedProduct === 'uang_kas') {
+    } else if (selectedProduct === 'uang kas') {
         const nominal = uangKasNominal.value;
         const amount = nominal ? parseInt(nominal, 10) : 0;
         if (amount < 5000) {
@@ -619,7 +619,7 @@ function calculatePrice() {
     const selectedProduct = produkSelect.value;
 
     // Tambahkan validasi uang kas di sini
-    if (selectedProduct === 'uang_kas') {
+    if (selectedProduct === 'uang kas') {
         const nominal = uangKasNominal.value;
         const amount = nominal ? parseInt(nominal, 10) : 0;
         if (amount < 5000) {
@@ -653,7 +653,7 @@ if (selectedProduct === 'kta') {
         const isLargeSize = ukuran === 'XXL' || ukuran === 'XXXL';
         currentPrice = PRICES.kemeja[kemejaType][isLargeSize ? 'large' : 'normal'];
     }
-} else if (selectedProduct === 'uang_kas') {
+} else if (selectedProduct === 'uang kas') {
     const nominal = uangKasNominal.value;
     currentPrice = nominal ? parseInt(nominal, 10) : 0;
     formData.append('uangKasNominal', nominal);  // <-- TAMBAH ini supaya nominal ikut terkirim
