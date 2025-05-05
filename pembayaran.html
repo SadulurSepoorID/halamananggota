@@ -282,7 +282,7 @@
             }
 
             header h1 {
-                font-size: 24px;
+                font-size: 20px;
             }
         }
     </style>
@@ -290,7 +290,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Sistem Pembelian atribut Komunitas <br>Sadulur Sepoor Indonesia</h1>
+            <h1>Sistem Pembayaran Komunitas <br>Sadulur Sepoor Indonesia</h1>
             <p>Silahkan lengkapi formulir pembelian di bawah ini</p>
         </header>
 
@@ -314,13 +314,19 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="produk">Produk</label>
+                    <label for="produk">Jenis Pembayaran</label>
                     <select id="produk" name="produk" required>
-                        <option value="" selected disabled>Pilih Produk</option>
+                        <option value="" selected disabled>Pilih Jenis Pembayaran</option>
                         <option value="kemeja">Kemeja</option>
                         <option value="kta">KTA</option>
+                        <option value="uang_kas">Uang Kas</option>
                     </select>
                 </div>
+                
+                <div class="form-group" id="uangKasGroup" style="display: none;">
+    <label for="uangKasNominal">Nominal Uang Kas (Rp) Tanpa titik "."</label>
+    <input type="number" id="uangKasNominal" name="uangKasNominal" min="1000" placeholder="Masukkan nominal uang kas">
+</div>
 
                 <div class="form-group size-group" id="ukuranGroup">
                     <label for="ukuran">Ukuran Kemeja</label>
@@ -431,40 +437,42 @@
             }
         };
 
-        // DOM Elements
-        const form = document.getElementById('orderForm');
-        const produkSelect = document.getElementById('produk');
-        const ukuranGroup = document.getElementById('ukuranGroup');
-        const kemejaTypeGroup = document.getElementById('kemejaTypeGroup');
-        const ktaTypeGroup = document.getElementById('ktaTypeGroup');
-        const ukuranSelect = document.getElementById('ukuran');
-        const kemejaTypeSelect = document.getElementById('kemejaType');
-        const ktaTypeSelect = document.getElementById('ktaType');
-        const paymentSelect = document.getElementById('payment');
-        const paymentDetails = document.getElementById('paymentDetails');
-        const paymentAccount = document.getElementById('paymentAccount');
-        const qrCode = document.getElementById('qrCode');
-        const totalPrice = document.getElementById('totalPrice');
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('buktiPembayaran');
-        const fileInfo = document.getElementById('fileInfo');
-        const submitBtn = document.getElementById('submitBtn');
-        const loading = document.getElementById('loading');
-        const notification = document.getElementById('notification');
-        const niaInput = document.getElementById('nia');
-        const whatsappInput = document.getElementById('whatsapp');
+// DOM Elements
+const form = document.getElementById('orderForm');
+const produkSelect = document.getElementById('produk');
+const ukuranGroup = document.getElementById('ukuranGroup');
+const kemejaTypeGroup = document.getElementById('kemejaTypeGroup');
+const ktaTypeGroup = document.getElementById('ktaTypeGroup');
+const ukuranSelect = document.getElementById('ukuran');
+const kemejaTypeSelect = document.getElementById('kemejaType');
+const ktaTypeSelect = document.getElementById('ktaType');
+const paymentSelect = document.getElementById('payment');
+const paymentDetails = document.getElementById('paymentDetails');
+const paymentAccount = document.getElementById('paymentAccount');
+const qrCode = document.getElementById('qrCode');
+const totalPrice = document.getElementById('totalPrice');
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('buktiPembayaran');
+const fileInfo = document.getElementById('fileInfo');
+const submitBtn = document.getElementById('submitBtn');
+const loading = document.getElementById('loading');
+const notification = document.getElementById('notification');
+const niaInput = document.getElementById('nia');
+const whatsappInput = document.getElementById('whatsapp');
+const uangKasNominal = document.getElementById('uangKasNominal');
 
-        // Event Listeners
-        produkSelect.addEventListener('change', handleProductChange);
-        ukuranSelect.addEventListener('change', calculatePrice);
-        kemejaTypeSelect.addEventListener('change', calculatePrice);
-        ktaTypeSelect.addEventListener('change', calculatePrice);
-        paymentSelect.addEventListener('change', handlePaymentChange);
-        uploadArea.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', handleFileUpload);
-        form.addEventListener('submit', handleSubmit);
-        niaInput.addEventListener('blur', formatNIA);
-        whatsappInput.addEventListener('blur', formatWhatsApp);
+// Event Listeners
+produkSelect.addEventListener('change', handleProductChange);
+ukuranSelect.addEventListener('change', calculatePrice);
+kemejaTypeSelect.addEventListener('change', calculatePrice);
+ktaTypeSelect.addEventListener('change', calculatePrice);
+paymentSelect.addEventListener('change', handlePaymentChange);
+uploadArea.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', handleFileUpload);
+form.addEventListener('submit', handleSubmit);
+niaInput.addEventListener('blur', formatNIA);
+whatsappInput.addEventListener('blur', formatWhatsApp);
+uangKasNominal.addEventListener('input', calculatePrice);
 
         // Format NIA to SS-XXXX format
         function formatNIA() {
@@ -504,28 +512,31 @@
 
         // Handle product selection
         function handleProductChange() {
-            const selectedProduct = produkSelect.value;
-            
-            // Hide all product-specific groups first
-            ukuranGroup.style.display = 'none';
-            kemejaTypeGroup.style.display = 'none';
-            ktaTypeGroup.style.display = 'none';
-            
-            // Reset selections
-            ukuranSelect.selectedIndex = 0;
-            kemejaTypeSelect.selectedIndex = 0;
-            ktaTypeSelect.selectedIndex = 0;
-            
-            // Show relevant groups based on selection
-            if (selectedProduct === 'kemeja') {
-                ukuranGroup.style.display = 'block';
-                kemejaTypeGroup.style.display = 'block';
-            } else if (selectedProduct === 'kta') {
-                ktaTypeGroup.style.display = 'block';
-            }
-            
-            calculatePrice();
-        }
+    const selectedProduct = produkSelect.value;
+    
+    // Hide all product-specific groups first
+    ukuranGroup.style.display = 'none';
+    kemejaTypeGroup.style.display = 'none';
+    ktaTypeGroup.style.display = 'none';
+    uangKasGroup.style.display = 'none';
+    
+    // Reset selections
+    ukuranSelect.selectedIndex = 0;
+    kemejaTypeSelect.selectedIndex = 0;
+    ktaTypeSelect.selectedIndex = 0;
+    
+    // Show relevant groups based on selection
+    if (selectedProduct === 'kemeja') {
+        ukuranGroup.style.display = 'block';
+        kemejaTypeGroup.style.display = 'block';
+    } else if (selectedProduct === 'kta') {
+        ktaTypeGroup.style.display = 'block';
+    } else if (selectedProduct === 'uang_kas') {
+        uangKasGroup.style.display = 'block';
+    }
+    
+    calculatePrice();
+}
 
         // Handle payment method selection
         function handlePaymentChange() {
@@ -547,30 +558,40 @@
             }
         }
 
-        // Calculate and display price
-        function calculatePrice() {
-            let price = 0;
-            const selectedProduct = produkSelect.value;
-            
-            if (selectedProduct === 'kta') {
-                const ktaType = ktaTypeSelect.value;
-                if (ktaType) {
-                    price = PRICES.kta[ktaType];
-                }
-            } else if (selectedProduct === 'kemeja') {
-                const ukuran = ukuranSelect.value;
-                const kemejaType = kemejaTypeSelect.value;
-                
-                if (ukuran && kemejaType) {
-                    // Check if it's a large size (XXL or XXXL)
-                    const isLargeSize = ukuran === 'XXL' || ukuran === 'XXXL';
-                    price = PRICES.kemeja[kemejaType][isLargeSize ? 'large' : 'normal'];
-                }
-            }
-            
-            // Format price to IDR
-            totalPrice.textContent = `Total: Rp ${price.toLocaleString('id-ID')}`;
+// Calculate and display price
+function calculatePrice() {
+    let price = 0;
+    const selectedProduct = produkSelect.value;
+    
+    if (selectedProduct === 'kta') {
+        const ktaType = ktaTypeSelect.value;
+        if (ktaType) {
+            price = PRICES.kta[ktaType];
         }
+    } else if (selectedProduct === 'kemeja') {
+        const ukuran = ukuranSelect.value;
+        const kemejaType = kemejaTypeSelect.value;
+        
+        if (ukuran && kemejaType) {
+            const isLargeSize = ukuran === 'XXL' || ukuran === 'XXXL';
+            price = PRICES.kemeja[kemejaType][isLargeSize ? 'large' : 'normal'];
+        }
+    } else if (selectedProduct === 'uang_kas') {
+        const nominal = uangKasNominal.value;
+        const amount = nominal ? parseInt(nominal, 10) : 0;
+        if (amount < 5000) {
+            totalPrice.textContent = `Minimal pembayaran Rp 5.000`;
+            submitBtn.disabled = true; // masih blok tombol karena nominal tidak cukup
+            return;
+        }
+        price = amount;
+    }
+    
+    totalPrice.textContent = `Total: Rp ${price.toLocaleString('id-ID')}`;
+    
+    // Selalu cek apakah sudah ada file sebelum aktifkan tombol
+    checkSubmitButton();
+}
 
         // Handle file upload
         function handleFileUpload(e) {
@@ -593,35 +614,50 @@
 
         // Handle form submission with Google Apps Script integration
         async function handleSubmit(e) {
-            e.preventDefault();
-            showLoading(true);
-            
-            // Show notification
-            showNotification('Mengirim pesanan, mohon tunggu...', 'info');
-            
-            try {
-                // Get form data
-                const formData = new FormData(form);
-                const buktiFile = fileInput.files[0];
-                
-                // Calculate current price
-                let currentPrice = 0;
-                const selectedProduct = produkSelect.value;
-                
-                if (selectedProduct === 'kta') {
-                    const ktaType = ktaTypeSelect.value;
-                    if (ktaType) {
-                        currentPrice = PRICES.kta[ktaType];
-                    }
-                } else if (selectedProduct === 'kemeja') {
-                    const ukuran = ukuranSelect.value;
-                    const kemejaType = kemejaTypeSelect.value;
-                    
-                    if (ukuran && kemejaType) {
-                        const isLargeSize = ukuran === 'XXL' || ukuran === 'XXXL';
-                        currentPrice = PRICES.kemeja[kemejaType][isLargeSize ? 'large' : 'normal'];
-                    }
-                }
+    e.preventDefault();
+
+    const selectedProduct = produkSelect.value;
+
+    // Tambahkan validasi uang kas di sini
+    if (selectedProduct === 'uang_kas') {
+        const nominal = uangKasNominal.value;
+        const amount = nominal ? parseInt(nominal, 10) : 0;
+        if (amount < 5000) {
+            showNotification('Nominal kas minimal Rp 5.000. Silakan masukkan jumlah yang valid.');
+            return; // Hentikan submit kalau tidak valid
+        }
+    }
+
+    showLoading(true);
+    
+    // Show notification
+    showNotification('Mengirim pembayaran, mohon tunggu...', 'info');
+    
+    try {
+        // Get form data
+        const formData = new FormData(form);
+        const buktiFile = fileInput.files[0];
+        
+        // Calculate current price
+let currentPrice = 0;
+if (selectedProduct === 'kta') {
+    const ktaType = ktaTypeSelect.value;
+    if (ktaType) {
+        currentPrice = PRICES.kta[ktaType];
+    }
+} else if (selectedProduct === 'kemeja') {
+    const ukuran = ukuranSelect.value;
+    const kemejaType = kemejaTypeSelect.value;
+    
+    if (ukuran && kemejaType) {
+        const isLargeSize = ukuran === 'XXL' || ukuran === 'XXXL';
+        currentPrice = PRICES.kemeja[kemejaType][isLargeSize ? 'large' : 'normal'];
+    }
+} else if (selectedProduct === 'uang_kas') {
+    const nominal = uangKasNominal.value;
+    currentPrice = nominal ? parseInt(nominal, 10) : 0;
+    formData.append('uangKasNominal', nominal);  // <-- TAMBAH ini supaya nominal ikut terkirim
+}
                 
                 // Add price to form data
                 formData.append('totalPrice', currentPrice);
@@ -657,7 +693,7 @@
                 // Since no-cors mode doesn't allow reading the response,
                 // we assume success if no error is thrown
                 showLoading(false);
-                showNotification('Pesanan berhasil dikirim!', 'success');
+                showNotification('Pembayaran berhasil dikirim!', 'success');
                 
                 // Reset form
                 form.reset();
@@ -672,7 +708,7 @@
             } catch (error) {
                 console.error('Error:', error);
                 showLoading(false);
-                showNotification('Terjadi kesalahan saat mengirim pesanan. Silakan coba lagi.', 'error');
+                showNotification('Terjadi kesalahan saat mengirim pembayaran. Silakan coba lagi.', 'error');
             }
         }
 
