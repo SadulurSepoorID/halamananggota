@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pembayaran dan Pembelian</title>
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #4285f4;
+            --light-blue: #e8f0fe;
+            --dark-blue: #1967d2;
+            --white: #ffffff;
+            --light-gray: #f5f5f5;
+            --gray: #e0e0e0;
+            --dark-gray: #757575;
+            --black: #212121;
+            --red: #d32f2f;
+            --green: #388e3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--black);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 20px 0;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .card {
+            background-color: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--black);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--gray);
+            border-radius: 5px;
+            font-size: 16px;
+            color: var(--black);
+            transition: border 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23757575' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-6-6 1.5-1.5L8 8.5l4.5-4.5L14 5.5l-6 6z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 40px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--gray);
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background-color: var(--light-blue);
+        }
+
+        .upload-area p {
+            color: var(--dark-gray);
+            margin-bottom: 10px;
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            margin-top: 10px;
+            display: none;
+            padding: 10px;
+            background-color: var(--light-blue);
+            border-radius: 5px;
+        }
+
+        .payment-details {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--light-blue);
+            border-radius: 5px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .payment-account {
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .price-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: var(--light-blue);
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: block;
+            width: 100%;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background-color: var(--dark-blue);
+        }
+
+        .btn:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+        }
+
+        .btn-back {
+            background-color: var(--white);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            margin-bottom: 20px;
+            display: inline-block;
+            width: auto;
+            padding: 8px 15px;
+        }
+
+        .btn-back:hover {
+            background-color: var(--light-blue);
+        }
+
+        .qr-code {
+            max-width: 200px;
+            margin: 15px auto;
+            display: none;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: var(--white);
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        .notification.success {
+            background-color: var(--green);
+        }
+
+        .notification.error {
+            background-color: var(--red);
+        }
+
+        .notification.info {
+            background-color: var(--primary-color);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--light-blue);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hide {
+            display: none;
+        }
+
+        .size-group, .shirt-type-group, .kta-type-group {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            header {
+                padding: 15px 0;
+                margin-bottom: 20px;
+            }
+
+            header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistem Pembelian atribut Komunitas <br>Sadulur Sepoor Indonesia</h1>
+            <p>Silahkan lengkapi formulir pembelian di bawah ini</p>
+        </header>
+
+        <a href="https://sadulursepoorid.github.io/Sadulursepoorid/" class="btn btn-back">← Web Utama</a>
+
+        <div class="card">
+            <form id="orderForm">
+                <div class="form-group">
+                    <label for="nama">Nama Lengkap</label>
+                    <input type="text" id="nama" name="nama" required placeholder="Masukkan nama lengkap Anda">
+                </div>
+
+                <div class="form-group">
+                    <label for="nia">NIA</label>
+                    <input type="text" id="nia" name="nia" required placeholder="Masukkan NIA Anda">
+                </div>
+
+                <div class="form-group">
+                    <label for="whatsapp">Nomor WhatsApp</label>
+                    <input type="text" id="whatsapp" name="whatsapp" required placeholder="Masukkan nomor WhatsApp Anda">
+                </div>
+
+                <div class="form-group">
+                    <label for="produk">Produk</label>
+                    <select id="produk" name="produk" required>
+                        <option value="" selected disabled>Pilih Produk</option>
+                        <option value="kemeja">Kemeja</option>
+                        <option value="kta">KTA</option>
+                    </select>
+                </div>
+
+                <div class="form-group size-group" id="ukuranGroup">
+                    <label for="ukuran">Ukuran Kemeja</label>
+                    <select id="ukuran" name="ukuran">
+                        <option value="" selected disabled>Pilih Ukuran</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                        <option value="XXL">XXL</option>
+                        <option value="XXXL">XXXL</option>
+                    </select>
+                </div>
+
+                <div class="form-group shirt-type-group" id="kemejaTypeGroup">
+                    <label for="kemejaType">Tipe Kemeja</label>
+                    <select id="kemejaType" name="kemejaType">
+                        <option value="" selected disabled>Pilih Tipe Kemeja</option>
+                        <option value="pendek">Lengan Pendek</option>
+                        <option value="panjang">Lengan Panjang</option>
+                    </select>
+                </div>
+
+                <div class="form-group kta-type-group" id="ktaTypeGroup">
+                    <label for="ktaType">Tipe KTA</label>
+                    <select id="ktaType" name="ktaType">
+                        <option value="" selected disabled>Pilih Tipe KTA</option>
+                        <option value="biasa">Biasa</option>
+                        <option value="emoney">E-money</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="payment">Metode Pembayaran</label>
+                    <select id="payment" name="payment" required>
+                        <option value="" selected disabled>Pilih Metode Pembayaran</option>
+                        <option value="bni">BNI</option>
+                        <option value="gopay">GOPAY</option>
+                        <option value="dana">DANA</option>
+                        <option value="ovo">OVO</option>
+                        <option value="qris">QRIS</option>
+                    </select>
+                </div>
+
+                <div class="payment-details" id="paymentDetails">
+                    <p>Silakan transfer ke rekening yang sesuai dengan metode pembayaran yang dipilih.</p>
+                    <p class="payment-account" id="paymentAccount"></p>
+                    <img src="" alt="QR Code" class="qr-code" id="qrCode">
+                </div>
+
+                <div class="price-display" id="totalPrice">
+                    Total: Rp 0
+                </div>
+
+                <div class="form-group">
+                    <label for="buktiPembayaran">Bukti Pembayaran</label>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">⬆️</div>
+                        <p>Klik atau seret file bukti pembayaran di sini</p>
+                        <input type="file" id="buktiPembayaran" name="buktiPembayaran" accept="image/*" style="display: none;" required>
+                    </div>
+                    <div class="file-info" id="fileInfo"></div>
+                </div>
+
+                <button type="submit" class="btn" id="submitBtn" disabled>Kirim Pesanan</button>
+                <div class="loading" id="loading">Mengirim pesanan...</div>
+            </form>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Konstanta
+        const PAYMENT_DETAILS = {
+            'bni': 'BNI: 1854543936 a.n. Herie Haryadi',
+            'gopay': 'GOPAY: 082123878166 a.n. Herie Haryadi',
+            'dana': 'DANA: 082123878166 a.n. Herie Haryadi',
+            'ovo': 'OVO: 082123878166 a.n. Herie Haryadi',
+            'qris': 'Silakan scan QR code di bawah ini:',
+        };
+        
+        // Fungsi untuk mengkonversi file ke Base64
+        function convertFileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        };
+
+        const QRIS_URL = 'https://i.imgur.com/sdQhulj.jpeg'; // Ganti dengan URL yang sebenarnya
+
+        const PRICES = {
+            'kta': {
+                'biasa': 15000,
+                'emoney': 50000
+            },
+            'kemeja': {
+                'pendek': {
+                    'normal': 180000,
+                    'large': 190000  // XXL-XXXL
+                },
+                'panjang': {
+                    'normal': 220000,
+                    'large': 230000  // XXL-XXXL
+                }
+            }
+        };
+
+        // DOM Elements
+        const form = document.getElementById('orderForm');
+        const produkSelect = document.getElementById('produk');
+        const ukuranGroup = document.getElementById('ukuranGroup');
+        const kemejaTypeGroup = document.getElementById('kemejaTypeGroup');
+        const ktaTypeGroup = document.getElementById('ktaTypeGroup');
+        const ukuranSelect = document.getElementById('ukuran');
+        const kemejaTypeSelect = document.getElementById('kemejaType');
+        const ktaTypeSelect = document.getElementById('ktaType');
+        const paymentSelect = document.getElementById('payment');
+        const paymentDetails = document.getElementById('paymentDetails');
+        const paymentAccount = document.getElementById('paymentAccount');
+        const qrCode = document.getElementById('qrCode');
+        const totalPrice = document.getElementById('totalPrice');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('buktiPembayaran');
+        const fileInfo = document.getElementById('fileInfo');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const notification = document.getElementById('notification');
+        const niaInput = document.getElementById('nia');
+        const whatsappInput = document.getElementById('whatsapp');
+
+        // Event Listeners
+        produkSelect.addEventListener('change', handleProductChange);
+        ukuranSelect.addEventListener('change', calculatePrice);
+        kemejaTypeSelect.addEventListener('change', calculatePrice);
+        ktaTypeSelect.addEventListener('change', calculatePrice);
+        paymentSelect.addEventListener('change', handlePaymentChange);
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileUpload);
+        form.addEventListener('submit', handleSubmit);
+        niaInput.addEventListener('blur', formatNIA);
+        whatsappInput.addEventListener('blur', formatWhatsApp);
+
+        // Format NIA to SS-XXXX format
+        function formatNIA() {
+            let value = niaInput.value.trim();
+            if (value) {
+                // Remove non-numeric characters
+                value = value.replace(/\D/g, '');
+                
+                // Ensure 4 digits with leading zeros
+                while (value.length < 4) {
+                    value = '0' + value;
+                }
+                
+                // Format as SS-XXXX
+                niaInput.value = 'SS-' + value;
+            }
+        }
+
+        // Format WhatsApp number to 628... format
+        function formatWhatsApp() {
+            let value = whatsappInput.value.trim();
+            if (value) {
+                // Remove all non-numeric characters
+                value = value.replace(/\D/g, '');
+                
+                // Remove leading zeros
+                value = value.replace(/^0+/, '');
+                
+                // Check if it already starts with 62
+                if (!value.startsWith('62')) {
+                    value = '62' + value;
+                }
+                
+                whatsappInput.value = value;
+            }
+        }
+
+        // Handle product selection
+        function handleProductChange() {
+            const selectedProduct = produkSelect.value;
+            
+            // Hide all product-specific groups first
+            ukuranGroup.style.display = 'none';
+            kemejaTypeGroup.style.display = 'none';
+            ktaTypeGroup.style.display = 'none';
+            
+            // Reset selections
+            ukuranSelect.selectedIndex = 0;
+            kemejaTypeSelect.selectedIndex = 0;
+            ktaTypeSelect.selectedIndex = 0;
+            
+            // Show relevant groups based on selection
+            if (selectedProduct === 'kemeja') {
+                ukuranGroup.style.display = 'block';
+                kemejaTypeGroup.style.display = 'block';
+            } else if (selectedProduct === 'kta') {
+                ktaTypeGroup.style.display = 'block';
+            }
+            
+            calculatePrice();
+        }
+
+        // Handle payment method selection
+        function handlePaymentChange() {
+            const selectedPayment = paymentSelect.value;
+            
+            if (selectedPayment) {
+                paymentAccount.textContent = PAYMENT_DETAILS[selectedPayment];
+                paymentDetails.style.display = 'block';
+                
+                // Show QR code for QRIS
+                if (selectedPayment === 'qris') {
+                    qrCode.src = QRIS_URL;
+                    qrCode.style.display = 'block';
+                } else {
+                    qrCode.style.display = 'none';
+                }
+            } else {
+                paymentDetails.style.display = 'none';
+            }
+        }
+
+        // Calculate and display price
+        function calculatePrice() {
+            let price = 0;
+            const selectedProduct = produkSelect.value;
+            
+            if (selectedProduct === 'kta') {
+                const ktaType = ktaTypeSelect.value;
+                if (ktaType) {
+                    price = PRICES.kta[ktaType];
+                }
+            } else if (selectedProduct === 'kemeja') {
+                const ukuran = ukuranSelect.value;
+                const kemejaType = kemejaTypeSelect.value;
+                
+                if (ukuran && kemejaType) {
+                    // Check if it's a large size (XXL or XXXL)
+                    const isLargeSize = ukuran === 'XXL' || ukuran === 'XXXL';
+                    price = PRICES.kemeja[kemejaType][isLargeSize ? 'large' : 'normal'];
+                }
+            }
+            
+            // Format price to IDR
+            totalPrice.textContent = `Total: Rp ${price.toLocaleString('id-ID')}`;
+        }
+
+        // Handle file upload
+        function handleFileUpload(e) {
+            const file = fileInput.files[0];
+            
+            if (file) {
+                fileInfo.textContent = `File terpilih: ${file.name}`;
+                fileInfo.style.display = 'block';
+                
+                // Enable submit button if file is uploaded
+                checkSubmitButton();
+            }
+        }
+
+        // Check if submit button should be enabled
+        function checkSubmitButton() {
+            const file = fileInput.files[0];
+            submitBtn.disabled = !file;
+        }
+
+        // Handle form submission with Google Apps Script integration
+        async function handleSubmit(e) {
+            e.preventDefault();
+            showLoading(true);
+            
+            // Show notification
+            showNotification('Mengirim pesanan, mohon tunggu...', 'info');
+            
+            try {
+                // Get form data
+                const formData = new FormData(form);
+                const buktiFile = fileInput.files[0];
+                
+                // Calculate current price
+                let currentPrice = 0;
+                const selectedProduct = produkSelect.value;
+                
+                if (selectedProduct === 'kta') {
+                    const ktaType = ktaTypeSelect.value;
+                    if (ktaType) {
+                        currentPrice = PRICES.kta[ktaType];
+                    }
+                } else if (selectedProduct === 'kemeja') {
+                    const ukuran = ukuranSelect.value;
+                    const kemejaType = kemejaTypeSelect.value;
+                    
+                    if (ukuran && kemejaType) {
+                        const isLargeSize = ukuran === 'XXL' || ukuran === 'XXXL';
+                        currentPrice = PRICES.kemeja[kemejaType][isLargeSize ? 'large' : 'normal'];
+                    }
+                }
+                
+                // Add price to form data
+                formData.append('totalPrice', currentPrice);
+                
+                // Convert bukti pembayaran to base64
+                if (buktiFile) {
+                    const base64File = await convertFileToBase64(buktiFile);
+                    formData.append('buktiPembayaranBase64', base64File);
+                    formData.append('buktiPembayaranName', buktiFile.name);
+                    formData.append('buktiPembayaranType', buktiFile.type);
+                }
+                
+                // Create JSON object from form data
+                const formDataJson = {};
+                formData.forEach((value, key) => {
+                    formDataJson[key] = value;
+                });
+                
+                // Google Apps Script endpoint URL
+                // Ganti URL ini dengan URL hasil deploy Apps Script Anda
+                const scriptUrl = 'https://script.google.com/macros/s/AKfycbwz-1oM1thgkqjeUvzwlXzGK-p30vpOeqm6J7eLtFb4vqF1OvJk349skIqopV24hwHM/exec';
+                
+                // Send data to Google Apps Script
+                const response = await fetch(scriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formDataJson),
+                    mode: 'no-cors' // Required for Google Apps Script
+                });
+                
+                // Since no-cors mode doesn't allow reading the response,
+                // we assume success if no error is thrown
+                showLoading(false);
+                showNotification('Pesanan berhasil dikirim!', 'success');
+                
+                // Reset form
+                form.reset();
+                fileInfo.style.display = 'none';
+                paymentDetails.style.display = 'none';
+                ukuranGroup.style.display = 'none';
+                kemejaTypeGroup.style.display = 'none';
+                ktaTypeGroup.style.display = 'none';
+                totalPrice.textContent = 'Total: Rp 0';
+                submitBtn.disabled = true;
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showLoading(false);
+                showNotification('Terjadi kesalahan saat mengirim pesanan. Silakan coba lagi.', 'error');
+            }
+        }
+
+        // Show/hide loading indicator
+        function showLoading(show) {
+            loading.style.display = show ? 'block' : 'none';
+            submitBtn.style.display = show ? 'none' : 'block';
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize
+        window.onload = function() {
+            paymentDetails.style.display = 'none';
+        };
+    </script>
+</body>
+</html>
