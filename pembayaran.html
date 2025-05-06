@@ -325,7 +325,7 @@
                 
                 <div class="form-group" id="uangKasGroup" style="display: none;">
     <label for="uangKasNominal">Nominal Uang Kas (Rp) Tanpa titik "."</label>
-    <input type="number" id="uangKasNominal" name="uangKasNominal" min="1000" placeholder="Masukkan nominal uang kas">
+    <input type="number" id="uangKasNominal" name="uangKasNominal" min="5000" placeholder="Masukkan nominal uang kas">
 </div>
 
                 <div class="form-group size-group" id="ukuranGroup">
@@ -361,13 +361,14 @@
                 <div class="form-group">
                     <label for="payment">Metode Pembayaran</label>
                     <select id="payment" name="payment" required>
-                        <option value="" selected disabled>Pilih Metode Pembayaran</option>
-                        <option value="bni">BNI</option>
-                        <option value="gopay">GOPAY</option>
-                        <option value="dana">DANA</option>
-                        <option value="ovo">OVO</option>
-                        <option value="qris">QRIS</option>
-                    </select>
+    <option value="" selected disabled>Pilih Metode Pembayaran</option>
+    <option value="BNI">BNI</option>
+    <option value="GOPAY">GOPAY</option>
+    <option value="DANA">DANA</option>
+    <option value="OVO">OVO</option>
+    <option value="QRIS">QRIS</option>
+    <option value="TUNAI">Tunai</option>
+</select>
                 </div>
 
                 <div class="payment-details" id="paymentDetails">
@@ -401,11 +402,12 @@
     <script>
         // Konstanta
         const PAYMENT_DETAILS = {
-            'bni': 'BNI: 1854543936 a.n. Herie Haryadi',
-            'gopay': 'GOPAY: 082123878166 a.n. Herie Haryadi',
-            'dana': 'DANA: 082123878166 a.n. Herie Haryadi',
-            'ovo': 'OVO: 082123878166 a.n. Herie Haryadi',
-            'qris': 'Silakan scan QR code di bawah ini:',
+            'BNI': 'BNI: 1854543936 a.n. Herie Haryadi',
+            'GOPAY': 'GOPAY: 082123878166 a.n. Herie Haryadi',
+            'DANA': 'DANA: 082123878166 a.n. Herie Haryadi',
+            'OVO': 'OVO: 082123878166 a.n. Herie Haryadi',
+            'QRIS': 'Silakan scan QR code di bawah ini:',
+            'TUNAI': 'Bayar langsung ke pengurus'
         };
         
         // Fungsi untuk mengkonversi file ke Base64
@@ -419,6 +421,7 @@
         };
 
         const QRIS_URL = 'https://i.imgur.com/sdQhulj.jpeg'; // Ganti dengan URL yang sebenarnya
+        const ENABLE_TUNAI = true; // Ubah true/false sesuai kebutuhan
 
         const PRICES = {
             'kta': {
@@ -437,7 +440,7 @@
             }
         };
 
-// DOM Elements
+// === DOM Elements ===
 const form = document.getElementById('orderForm');
 const produkSelect = document.getElementById('produk');
 const ukuranGroup = document.getElementById('ukuranGroup');
@@ -460,8 +463,11 @@ const notification = document.getElementById('notification');
 const niaInput = document.getElementById('nia');
 const whatsappInput = document.getElementById('whatsapp');
 const uangKasNominal = document.getElementById('uangKasNominal');
+const uangKasGroup = document.getElementById('uangKasGroup');
 
-// Event Listeners
+// ============================
+// === EVENT LISTENER ===
+// ============================
 produkSelect.addEventListener('change', handleProductChange);
 ukuranSelect.addEventListener('change', calculatePrice);
 kemejaTypeSelect.addEventListener('change', calculatePrice);
@@ -474,58 +480,62 @@ niaInput.addEventListener('blur', formatNIA);
 whatsappInput.addEventListener('blur', formatWhatsApp);
 uangKasNominal.addEventListener('input', calculatePrice);
 
-        // Format NIA to SS-XXXX format
-        function formatNIA() {
-            let value = niaInput.value.trim();
-            if (value) {
-                // Remove non-numeric characters
-                value = value.replace(/\D/g, '');
-                
-                // Ensure 4 digits with leading zeros
-                while (value.length < 4) {
-                    value = '0' + value;
-                }
-                
-                // Format as SS-XXXX
-                niaInput.value = 'SS-' + value;
-            }
-        }
+// ============================
+// === FUNGSI TAMBAHAN ===
+// ============================
 
-        // Format WhatsApp number to 628... format
-        function formatWhatsApp() {
-            let value = whatsappInput.value.trim();
-            if (value) {
-                // Remove all non-numeric characters
-                value = value.replace(/\D/g, '');
-                
-                // Remove leading zeros
-                value = value.replace(/^0+/, '');
-                
-                // Check if it already starts with 62
-                if (!value.startsWith('62')) {
-                    value = '62' + value;
-                }
-                
-                whatsappInput.value = value;
-            }
-        }
+// Setup opsi payment (termasuk tunai aktif/nonaktif)
+function setupPaymentOptions() {
+    // Kosongkan dulu
+    paymentSelect.innerHTML = '<option value="">-- Pilih Metode Pembayaran --</option>';
 
-        // Handle product selection
-        function handleProductChange() {
+    // Tambahkan opsi selain tunai
+    for (const [method, details] of Object.entries(PAYMENT_DETAILS)) {
+        if (method === 'TUNAI' && !ENABLE_TUNAI) continue; // skip kalau tunai dinonaktifkan
+        const option = document.createElement('option');
+        option.value = method;
+        option.textContent = method.replace('_', ' ').toUpperCase();
+        paymentSelect.appendChild(option);
+    }
+}
+
+// Format NIA to SS-XXXX format
+function formatNIA() {
+    let value = niaInput.value.trim();
+    if (value) {
+        value = value.replace(/\D/g, '');
+        while (value.length < 4) {
+            value = '0' + value;
+        }
+        niaInput.value = 'SS-' + value;
+    }
+}
+
+// Format WhatsApp number to 628... format
+function formatWhatsApp() {
+    let value = whatsappInput.value.trim();
+    if (value) {
+        value = value.replace(/\D/g, '');
+        value = value.replace(/^0+/, '');
+        if (!value.startsWith('62')) {
+            value = '62' + value;
+        }
+        whatsappInput.value = value;
+    }
+}
+
+// Handle product selection
+function handleProductChange() {
     const selectedProduct = produkSelect.value;
-    
-    // Hide all product-specific groups first
     ukuranGroup.style.display = 'none';
     kemejaTypeGroup.style.display = 'none';
     ktaTypeGroup.style.display = 'none';
     uangKasGroup.style.display = 'none';
-    
-    // Reset selections
+
     ukuranSelect.selectedIndex = 0;
     kemejaTypeSelect.selectedIndex = 0;
     ktaTypeSelect.selectedIndex = 0;
-    
-    // Show relevant groups based on selection
+
     if (selectedProduct === 'kemeja') {
         ukuranGroup.style.display = 'block';
         kemejaTypeGroup.style.display = 'block';
@@ -534,35 +544,49 @@ uangKasNominal.addEventListener('input', calculatePrice);
     } else if (selectedProduct === 'uang kas') {
         uangKasGroup.style.display = 'block';
     }
-    
+
     calculatePrice();
 }
 
-        // Handle payment method selection
-        function handlePaymentChange() {
-            const selectedPayment = paymentSelect.value;
-            
-            if (selectedPayment) {
-                paymentAccount.textContent = PAYMENT_DETAILS[selectedPayment];
-                paymentDetails.style.display = 'block';
-                
-                // Show QR code for QRIS
-                if (selectedPayment === 'qris') {
-                    qrCode.src = QRIS_URL;
-                    qrCode.style.display = 'block';
-                } else {
-                    qrCode.style.display = 'none';
-                }
-            } else {
-                paymentDetails.style.display = 'none';
-            }
+// Handle payment method selection
+function handlePaymentChange() {
+    const selectedPayment = paymentSelect.value;
+
+    if (selectedPayment === 'TUNAI') {
+        paymentAccount.textContent = PAYMENT_DETAILS[selectedPayment]; // Tampilkan teks "Bayar langsung ke bendahara"
+        paymentDetails.style.display = 'block';  // Tampilkan kotak keterangan
+        qrCode.style.display = 'none';
+        fileInput.required = false;
+        fileInput.value = '';
+        fileInfo.textContent = '';
+        fileInfo.style.display = 'none';
+        submitBtn.disabled = false;
+    } else if (selectedPayment) {
+        paymentAccount.textContent = PAYMENT_DETAILS[selectedPayment];
+        paymentDetails.style.display = 'block';
+        fileInput.required = true;
+
+        if (selectedPayment === 'QRIS') {
+            qrCode.src = QRIS_URL;
+            qrCode.style.display = 'block';
+        } else {
+            qrCode.style.display = 'none';
         }
+
+        checkSubmitButton();
+    } else {
+        paymentDetails.style.display = 'none';
+        paymentAccount.textContent = '';
+        qrCode.style.display = 'none';
+        submitBtn.disabled = true;
+    }
+}
 
 // Calculate and display price
 function calculatePrice() {
     let price = 0;
     const selectedProduct = produkSelect.value;
-    
+
     if (selectedProduct === 'kta') {
         const ktaType = ktaTypeSelect.value;
         if (ktaType) {
@@ -571,7 +595,6 @@ function calculatePrice() {
     } else if (selectedProduct === 'kemeja') {
         const ukuran = ukuranSelect.value;
         const kemejaType = kemejaTypeSelect.value;
-        
         if (ukuran && kemejaType) {
             const isLargeSize = ukuran === 'XXL' || ukuran === 'XXXL';
             price = PRICES.kemeja[kemejaType][isLargeSize ? 'large' : 'normal'];
@@ -581,157 +604,159 @@ function calculatePrice() {
         const amount = nominal ? parseInt(nominal, 10) : 0;
         if (amount < 5000) {
             totalPrice.textContent = `Minimal pembayaran Rp 5.000`;
-            submitBtn.disabled = true; // masih blok tombol karena nominal tidak cukup
+            submitBtn.disabled = true;
             return;
         }
         price = amount;
     }
-    
+
     totalPrice.textContent = `Total: Rp ${price.toLocaleString('id-ID')}`;
-    
-    // Selalu cek apakah sudah ada file sebelum aktifkan tombol
     checkSubmitButton();
 }
 
-        // Handle file upload
-        function handleFileUpload(e) {
-            const file = fileInput.files[0];
-            
-            if (file) {
-                fileInfo.textContent = `File terpilih: ${file.name}`;
-                fileInfo.style.display = 'block';
-                
-                // Enable submit button if file is uploaded
-                checkSubmitButton();
-            }
-        }
+// Handle file upload
+function handleFileUpload() {
+    const file = fileInput.files[0];
+    if (file) {
+        fileInfo.textContent = `File terpilih: ${file.name}`;
+        fileInfo.style.display = 'block';
+        checkSubmitButton();
+    }
+}
 
-        // Check if submit button should be enabled
-        function checkSubmitButton() {
-            const file = fileInput.files[0];
-            submitBtn.disabled = !file;
-        }
+// Check if submit button should be enabled
+function checkSubmitButton() {
+    const selectedPayment = paymentSelect.value;
+    const file = fileInput.files[0];
 
-        // Handle form submission with Google Apps Script integration
-        async function handleSubmit(e) {
+    if (selectedPayment === 'TUNAI') {
+    paymentAccount.textContent = PAYMENT_DETAILS['TUNAI']; // Tambahkan baris ini
+    paymentDetails.style.display = 'block'; // Ubah dari 'none' jadi 'block' biar kelihatan
+    qrCode.style.display = 'none';
+    fileInput.required = false;
+    fileInput.value = '';
+    fileInfo.textContent = '';
+    fileInfo.style.display = 'none';
+    submitBtn.disabled = false;
+} else {
+        submitBtn.disabled = !file;
+    }
+}
+
+// Convert file to base64
+function convertFileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+    });
+}
+
+// Handle form submission with Google Apps Script integration
+async function handleSubmit(e) {
     e.preventDefault();
-
     const selectedProduct = produkSelect.value;
 
-    // Tambahkan validasi uang kas di sini
     if (selectedProduct === 'uang kas') {
         const nominal = uangKasNominal.value;
         const amount = nominal ? parseInt(nominal, 10) : 0;
         if (amount < 5000) {
             showNotification('Nominal kas minimal Rp 5.000. Silakan masukkan jumlah yang valid.', 'error');
-            return; // Hentikan submit kalau tidak valid
+            return;
         }
     }
 
     showLoading(true);
-    
-    // Show notification
     showNotification('Mengirim pembayaran, mohon tunggu...', 'info');
-    
+
     try {
-        // Get form data
         const formData = new FormData(form);
         const buktiFile = fileInput.files[0];
-        
-        // Calculate current price
-let currentPrice = 0;
-if (selectedProduct === 'kta') {
-    const ktaType = ktaTypeSelect.value;
-    if (ktaType) {
-        currentPrice = PRICES.kta[ktaType];
-    }
-} else if (selectedProduct === 'kemeja') {
-    const ukuran = ukuranSelect.value;
-    const kemejaType = kemejaTypeSelect.value;
-    
-    if (ukuran && kemejaType) {
-        const isLargeSize = ukuran === 'XXL' || ukuran === 'XXXL';
-        currentPrice = PRICES.kemeja[kemejaType][isLargeSize ? 'large' : 'normal'];
-    }
-} else if (selectedProduct === 'uang kas') {
-    const nominal = uangKasNominal.value;
-    currentPrice = nominal ? parseInt(nominal, 10) : 0;
-    formData.append('uangKasNominal', nominal);  // <-- TAMBAH ini supaya nominal ikut terkirim
-}
-                
-                // Add price to form data
-                formData.append('totalPrice', currentPrice);
-                
-                // Convert bukti pembayaran to base64
-                if (buktiFile) {
-                    const base64File = await convertFileToBase64(buktiFile);
-                    formData.append('buktiPembayaranBase64', base64File);
-                    formData.append('buktiPembayaranName', buktiFile.name);
-                    formData.append('buktiPembayaranType', buktiFile.type);
-                }
-                
-                // Create JSON object from form data
-                const formDataJson = {};
-                formData.forEach((value, key) => {
-                    formDataJson[key] = value;
-                });
-                
-                // Google Apps Script endpoint URL
-                // Ganti URL ini dengan URL hasil deploy Apps Script Anda
-                const scriptUrl = 'https://script.google.com/macros/s/AKfycbwz-1oM1thgkqjeUvzwlXzGK-p30vpOeqm6J7eLtFb4vqF1OvJk349skIqopV24hwHM/exec';
-                
-                // Send data to Google Apps Script
-                const response = await fetch(scriptUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formDataJson),
-                    mode: 'no-cors' // Required for Google Apps Script
-                });
-                
-                // Since no-cors mode doesn't allow reading the response,
-                // we assume success if no error is thrown
-                showLoading(false);
-                showNotification('Pembayaran berhasil dikirim!', 'success');
-                
-                // Reset form
-                form.reset();
-                fileInfo.style.display = 'none';
-                paymentDetails.style.display = 'none';
-                ukuranGroup.style.display = 'none';
-                kemejaTypeGroup.style.display = 'none';
-                ktaTypeGroup.style.display = 'none';
-                totalPrice.textContent = 'Total: Rp 0';
-                submitBtn.disabled = true;
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showLoading(false);
-                showNotification('Terjadi kesalahan saat mengirim pembayaran. Silakan coba lagi.', 'error');
+
+        let currentPrice = 0;
+        if (selectedProduct === 'kta') {
+            const ktaType = ktaTypeSelect.value;
+            if (ktaType) {
+                currentPrice = PRICES.kta[ktaType];
             }
+        } else if (selectedProduct === 'kemeja') {
+            const ukuran = ukuranSelect.value;
+            const kemejaType = kemejaTypeSelect.value;
+            if (ukuran && kemejaType) {
+                const isLargeSize = ukuran === 'XXL' || ukuran === 'XXXL';
+                currentPrice = PRICES.kemeja[kemejaType][isLargeSize ? 'large' : 'normal'];
+            }
+        } else if (selectedProduct === 'uang kas') {
+            const nominal = uangKasNominal.value;
+            currentPrice = nominal ? parseInt(nominal, 10) : 0;
+            formData.append('uangKasNominal', nominal);
         }
 
-        // Show/hide loading indicator
-        function showLoading(show) {
-            loading.style.display = show ? 'block' : 'none';
-            submitBtn.style.display = show ? 'none' : 'block';
+        formData.append('totalPrice', currentPrice);
+
+        if (buktiFile) {
+            const base64File = await convertFileToBase64(buktiFile);
+            formData.append('buktiPembayaranBase64', base64File);
+            formData.append('buktiPembayaranName', buktiFile.name);
+            formData.append('buktiPembayaranType', buktiFile.type);
         }
 
-        // Show notification
-        function showNotification(message, type) {
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
+        const formDataJson = {};
+        formData.forEach((value, key) => {
+            formDataJson[key] = value;
+        });
 
-        // Initialize
-        window.onload = function() {
-            paymentDetails.style.display = 'none';
-        };
-    </script>
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbwz-1oM1thgkqjeUvzwlXzGK-p30vpOeqm6J7eLtFb4vqF1OvJk349skIqopV24hwHM/exec';
+
+        await fetch(scriptUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formDataJson),
+            mode: 'no-cors'
+        });
+
+        showLoading(false);
+        showNotification('Pesanan berhasil dikirim!', 'success');
+
+        const orderSummary = {
+    nama: formData.get('nama') || '',
+    nia: formData.get('nia') || '',
+    produk: formData.get('produk') || '',
+    metodePembayaran: formData.get('payment') || '',
+    timestamp: new Date().toLocaleString('id-ID'),
+    totalPrice: currentPrice
+};
+        localStorage.setItem('orderSummary', JSON.stringify(orderSummary));
+        window.location.href = 'thanks.html';
+    } catch (error) {
+        console.error('Error:', error);
+        showLoading(false);
+        showNotification('Terjadi kesalahan saat mengirim pembayaran. Silakan coba lagi.', 'error');
+    }
+}
+
+// Loading indicator
+function showLoading(show) {
+    loading.style.display = show ? 'block' : 'none';
+    submitBtn.style.display = show ? 'none' : 'block';
+}
+
+// Notification
+function showNotification(message, type) {
+    notification.textContent = message;
+    notification.className = `notification ${type} show`;
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+// Init saat halaman dibuka
+window.onload = function() {
+    paymentDetails.style.display = 'none';
+    setupPaymentOptions(); 
+    handlePaymentChange(); // <-- Tambahkan ini
+};
+</script>
 </body>
 </html>
