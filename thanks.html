@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bukti Pembayaran</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background: #e8f0fe;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .receipt {
+    background: #fff;
+    width: 100%;
+    max-width: 400px;
+    padding: 30px 20px 50px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    clip-path: polygon(
+        0 5%, 
+        5% 0, 10% 5%, 15% 0, 20% 5%, 25% 0, 30% 5%, 35% 0, 40% 5%, 45% 0,
+        50% 5%, 55% 0, 60% 5%, 65% 0, 70% 5%, 75% 0, 80% 5%, 85% 0, 90% 5%, 95% 0, 100% 5%,
+        100% 97%, 
+        95% 100%, 90% 97%, 85% 100%, 80% 97%, 75% 100%, 70% 97%, 65% 100%, 60% 97%, 55% 100%, 
+        50% 97%, 45% 100%, 40% 97%, 35% 100%, 30% 97%, 25% 100%, 20% 97%, 15% 100%, 10% 97%, 5% 100%, 0 97%
+    );
+    overflow: hidden;
+}
+        .logo {
+            display: block;
+            margin: 0 auto 20px;
+            margin-top: 10px;
+            max-width: 120px;
+        }
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #0a74da;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            animation: pop 0.5s ease forwards;
+            box-shadow: 0 0 20px rgba(10, 116, 218, 0.5);
+        }
+        .checkmark svg {
+            width: 40px;
+            height: 40px;
+            stroke: white;
+            stroke-width: 3;
+            fill: none;
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: draw 0.8s forwards 0.5s ease-out;
+        }
+        @keyframes draw {
+            to { stroke-dashoffset: 0; }
+        }
+        @keyframes pop {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+        h1 {
+            font-size: 1.8em;
+            color: #0a3d62;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        p.subtitle {
+            font-size: 1em;
+            color: #4a4a4a;
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .summary {
+            border-top: 1px dashed #ccc;
+            border-bottom: 1px dashed #ccc;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+        .summary-item:last-child {
+            margin-bottom: 0;
+        }
+        .summary-item.total {
+    font-size: 1.2em;
+    font-weight: bold;
+    justify-content: space-between;
+}
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: #0a74da;
+            color: #fff;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #084e8a;
+        }
+        @media (max-width: 480px) {
+            .receipt {
+                padding: 20px 15px;
+            }
+            .logo {
+                max-width: 100px;
+            }
+            .checkmark {
+                width: 60px;
+                height: 60px;
+            }
+            .checkmark svg {
+                width: 30px;
+                height: 30px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt">
+        <img src="https://i.imgur.com/9rAb7r7.png" alt="Logo Komunitas" class="logo" />
+        <div class="checkmark">
+            <svg viewBox="0 0 52 52">
+                <path d="M14 27 l10 10 l20 -20" />
+            </svg>
+        </div>
+        <h1>Terima Kasih!</h1>
+        <p class="subtitle">Pembayaran Anda telah kami terima dengan sukses. Kami akan segera memproses pembayaran Anda.</p>
+
+        <div class="summary">
+    <div class="summary-item"><strong>Nama:</strong> <span id="nama">-</span></div>
+    <div class="summary-item"><strong>NIA:</strong> <span id="nia">-</span></div>
+    <div class="summary-item"><strong>Produk:</strong> <span id="produk">-</span></div>
+    <div class="summary-item"><strong>Metode Pembayaran:</strong> <span id="metode">-</span></div>
+    <div class="summary-item"><strong>Tanggal:</strong> <span id="tanggal">-</span></div>
+    <div class="summary-item"><strong>Jam:</strong> <span id="jam">-</span></div>
+
+    <hr style="border: none; border-top: 2px dashed #ccc; margin: 20px 0;" />
+
+    <div class="summary-item total">
+        <strong>Total:</strong> <span id="total">Rp0</span>
+    </div>
+</div>
+
+        <button onclick="window.location.href='pembayaran.html'">Kembali ke Halaman Pembayaran</button>
+    </div>
+
+    <script>
+        function toTitleCase(str) {
+    return str.toLowerCase().split(' ').map(function(word) {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+    }).join(' ');
+}
+
+function formatRupiah(angka) {
+    return new Intl.NumberFormat('id-ID', { 
+        style: 'currency', 
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(angka);
+}
+
+const orderData = JSON.parse(localStorage.getItem('orderSummary'));
+
+if (orderData) {
+    document.getElementById('nama').textContent = orderData.nama || '-';
+    document.getElementById('nia').textContent = orderData.nia || '-';
+    document.getElementById('produk').textContent = orderData.produk ? toTitleCase(orderData.produk) : '-';
+    document.getElementById('metode').textContent = orderData.metodePembayaran || '-';
+
+    // Tanggal & Jam
+    if (orderData.timestamp) {
+        const match = orderData.timestamp.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{2})\.(\d{2})\.(\d{2})/);
+
+        if (match) {
+            const [ , day, month, year, hour, minute, second ] = match;
+            const isoString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour}:${minute}:${second}`;
+            const dateObj = new Date(isoString);
+
+            if (!isNaN(dateObj.getTime())) {
+                const options = { day: 'numeric', month: 'short', year: 'numeric' };
+                const tanggal = dateObj.toLocaleDateString('id-ID', options);
+                const jam = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('tanggal').textContent = tanggal;
+                document.getElementById('jam').textContent = jam;
+            } else {
+                document.getElementById('tanggal').textContent = '-';
+                document.getElementById('jam').textContent = '-';
+            }
+        } else {
+            document.getElementById('tanggal').textContent = '-';
+            document.getElementById('jam').textContent = '-';
+        }
+    }
+
+    // TOTAL: ambil dari orderData.totalPrice
+if (orderData.totalPrice) {
+    document.getElementById('total').textContent = formatRupiah(orderData.totalPrice);
+}
+}
+    </script>
+</body>
+</html>
