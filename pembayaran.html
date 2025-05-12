@@ -304,7 +304,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="nia">NIA</label>
+                    <label for="nia">NIA (Nomor Identitas Anggota)</label>
                     <input type="text" id="nia" name="nia" required placeholder="Masukkan NIA Anda">
                 </div>
 
@@ -707,7 +707,7 @@ async function handleSubmit(e) {
             formDataJson[key] = value;
         });
 
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbxAYIrw3px-x50XKXnog_htuQCQE3jAaqGDGaadxlVesTo7Vd5yY7tYoTB6TPmQV-m-/exec';
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbxDsZ2qcIdDp8eRq-0a4utxsEZQZ6dvIOdKN-3TIvafb8OafZ-o6Gz383s-IHX4kPxs/exec';
 
         await fetch(scriptUrl, {
             method: 'POST',
