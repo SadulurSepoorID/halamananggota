@@ -557,33 +557,35 @@ function handleProductChange() {
 // Handle payment method selection
 function handlePaymentChange() {
     const selectedPayment = paymentSelect.value;
+    
+    // Reset semua elemen payment
+    paymentDetails.style.display = 'none';
+    paymentAccount.textContent = '';
+    qrCode.style.display = 'none';
+    uploadArea.style.display = 'none';
+    fileInput.required = false;
+    fileInput.value = '';
+    fileInfo.textContent = '';
+    fileInfo.style.display = 'none';
 
     if (selectedPayment === 'TUNAI') {
-        paymentAccount.textContent = PAYMENT_DETAILS[selectedPayment]; // Tampilkan teks "Bayar langsung ke bendahara"
-        paymentDetails.style.display = 'block';  // Tampilkan kotak keterangan
-        qrCode.style.display = 'none';
-        fileInput.required = false;
-        fileInput.value = '';
-        fileInfo.textContent = '';
-        fileInfo.style.display = 'none';
-        submitBtn.disabled = false;
+        paymentAccount.textContent = PAYMENT_DETAILS[selectedPayment];
+        paymentDetails.style.display = 'block';
+        // Untuk tunai, tidak perlu upload file
+        checkSubmitButton();
     } else if (selectedPayment) {
         paymentAccount.textContent = PAYMENT_DETAILS[selectedPayment];
         paymentDetails.style.display = 'block';
+        uploadArea.style.display = 'block'; // Tampilkan area upload
         fileInput.required = true;
 
         if (selectedPayment === 'QRIS') {
             qrCode.src = QRIS_URL;
             qrCode.style.display = 'block';
-        } else {
-            qrCode.style.display = 'none';
         }
 
         checkSubmitButton();
     } else {
-        paymentDetails.style.display = 'none';
-        paymentAccount.textContent = '';
-        qrCode.style.display = 'none';
         submitBtn.disabled = true;
     }
 }
@@ -624,8 +626,30 @@ function calculatePrice() {
 function handleFileUpload() {
     const file = fileInput.files[0];
     if (file) {
+        // Validasi tipe file
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
+        if (!allowedTypes.includes(file.type)) {
+            showNotification('Format file tidak didukung. Gunakan JPG, PNG, GIF, atau PDF.', 'error');
+            fileInput.value = '';
+            fileInfo.style.display = 'none';
+            checkSubmitButton();
+            return;
+        }
+
+        // Validasi ukuran file (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            showNotification('Ukuran file terlalu besar. Maksimal 5MB.', 'error');
+            fileInput.value = '';
+            fileInfo.style.display = 'none';
+            checkSubmitButton();
+            return;
+        }
+
         fileInfo.textContent = `File terpilih: ${file.name}`;
         fileInfo.style.display = 'block';
+        checkSubmitButton();
+    } else {
+        fileInfo.style.display = 'none';
         checkSubmitButton();
     }
 }
@@ -634,26 +658,30 @@ function handleFileUpload() {
 function checkSubmitButton() {
     const selectedPayment = paymentSelect.value;
     const file = fileInput.files[0];
-
+    
+    // Validasi form dasar
+    const isFormValid = form.checkValidity();
+    
     if (selectedPayment === 'TUNAI') {
-    paymentAccount.textContent = PAYMENT_DETAILS['TUNAI']; // Tambahkan baris ini
-    paymentDetails.style.display = 'block'; // Ubah dari 'none' jadi 'block' biar kelihatan
-    qrCode.style.display = 'none';
-    fileInput.required = false;
-    fileInput.value = '';
-    fileInfo.textContent = '';
-    fileInfo.style.display = 'none';
-    submitBtn.disabled = false;
-} else {
-        submitBtn.disabled = !file;
+        // Untuk tunai, tidak perlu file
+        submitBtn.disabled = !isFormValid;
+    } else if (selectedPayment) {
+        // Untuk metode lain, perlu file bukti pembayaran
+        submitBtn.disabled = !isFormValid || !file;
+    } else {
+        submitBtn.disabled = true;
     }
 }
 
-// Convert file to base64
+// Convert file to base64 - perbaikan fungsi
 function convertFileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onload = () => {
+            // Ambil hanya data base64 tanpa prefix data:image/jpeg;base64,
+            const base64Data = reader.result.split(',')[1];
+            resolve(base64Data);
+        };
         reader.onerror = error => reject(error);
         reader.readAsDataURL(file);
     });
@@ -677,12 +705,14 @@ async function handleSubmit(e) {
     showNotification('Mengirim pembayaran, mohon tunggu...', 'info');
 
     try {
+        // Generate barcode ID
+        const barcodeId = generateBarcodeId();
+        
+        // Ambil data dari form
         const formData = new FormData(form);
         const buktiFile = fileInput.files[0];
 
-        // Generate barcode ID
-        const barcodeId = generateBarcodeId();
-
+        // Hitung harga
         let currentPrice = 0;
         if (selectedProduct === 'kta') {
             const ktaType = ktaTypeSelect.value;
@@ -699,48 +729,82 @@ async function handleSubmit(e) {
         } else if (selectedProduct === 'uang kas') {
             const nominal = uangKasNominal.value;
             currentPrice = nominal ? parseInt(nominal, 10) : 0;
-            formData.append('uangKasNominal', nominal);
         }
 
-        formData.append('totalPrice', currentPrice);
-        formData.append('barcodeId', barcodeId); // Tambahkan barcode ID ke form data
+        // Siapkan data yang akan dikirim
+        const submitData = {
+            nama: formData.get('nama'),
+            nia: formData.get('nia'),
+            whatsapp: formData.get('whatsapp'),
+            produk: formData.get('produk'),
+            payment: formData.get('payment'),
+            totalPrice: currentPrice,
+            barcodeId: barcodeId,
+            timestamp: new Date().toISOString()
+        };
 
+        // Tambahkan data spesifik produk
+        if (selectedProduct === 'kemeja') {
+            submitData.ukuran = formData.get('ukuran');
+            submitData.kemejaType = formData.get('kemejaType');
+        } else if (selectedProduct === 'kta') {
+            submitData.ktaType = formData.get('ktaType');
+        } else if (selectedProduct === 'uang kas') {
+            submitData.uangKasNominal = formData.get('uangKasNominal') || uangKasNominal.value;
+        }
+
+        // Handle file upload jika ada
         if (buktiFile) {
-            const base64File = await convertFileToBase64(buktiFile);
-            formData.append('buktiPembayaranBase64', base64File);
-            formData.append('buktiPembayaranName', buktiFile.name);
-            formData.append('buktiPembayaranType', buktiFile.type);
+            try {
+                const base64File = await convertFileToBase64(buktiFile);
+                submitData.buktiPembayaranBase64 = base64File;
+                submitData.buktiPembayaranName = buktiFile.name;
+                submitData.buktiPembayaranType = buktiFile.type;
+                submitData.buktiPembayaranSize = buktiFile.size;
+            } catch (fileError) {
+                console.error('Error converting file:', fileError);
+                throw new Error('Gagal memproses file bukti pembayaran');
+            }
         }
 
-        const formDataJson = {};
-        formData.forEach((value, key) => {
-            formDataJson[key] = value;
-        });
+        console.log('Data yang akan dikirim:', submitData); // Debug log
 
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbwMgJQqZECEWml9t1ODi2EJRC0C1cw06vWE182-TVCS6sdO0BApsOmbiUtU2SqeRIyI/exec';
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbySS6ScrNLq8IAcCCsXODiwh6ca45qyVkTbd_1jccrHGn0mWLZ78IXbxMVJd-FA0-Q/exec';
 
-        await fetch(scriptUrl, {
+        const response = await fetch(scriptUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formDataJson),
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(submitData),
             mode: 'no-cors'
         });
 
         showLoading(false);
         showNotification('Pesanan berhasil dikirim!', 'success');
 
+        // Simpan data untuk halaman thanks
         const orderSummary = {
-    nama: formData.get('nama') || '',
-    nia: formData.get('nia') || '',
-    produk: formData.get('produk') || '',
-    metodePembayaran: formData.get('payment') || '',
-    timestamp: new Date().toLocaleString('id-ID'),
-    totalPrice: currentPrice,
-    barcodeId: barcodeId // Simpan barcode ID untuk digunakan di halaman thanks
-};
-        localStorage.setItem('orderSummary', JSON.stringify(orderSummary));
-        localStorage.setItem('currentBarcodeId', barcodeId); // Simpan untuk konsistensi
+            nama: submitData.nama || '',
+            nia: submitData.nia || '',
+            produk: submitData.produk || '',
+            metodePembayaran: submitData.payment || '',
+            timestamp: new Date().toLocaleString('id-ID'),
+            totalPrice: currentPrice,
+            barcodeId: barcodeId
+        };
+        
+        // Gunakan sessionStorage sebagai fallback jika localStorage tidak tersedia
+        try {
+            localStorage.setItem('orderSummary', JSON.stringify(orderSummary));
+            localStorage.setItem('currentBarcodeId', barcodeId);
+        } catch (storageError) {
+            sessionStorage.setItem('orderSummary', JSON.stringify(orderSummary));
+            sessionStorage.setItem('currentBarcodeId', barcodeId);
+        }
+        
         window.location.href = 'thanks.html';
+        
     } catch (error) {
         console.error('Error:', error);
         showLoading(false);
@@ -766,8 +830,9 @@ function showNotification(message, type) {
 // Init saat halaman dibuka
 window.onload = function() {
     paymentDetails.style.display = 'none';
+    uploadArea.style.display = 'none';
     setupPaymentOptions(); 
-    handlePaymentChange(); // <-- Tambahkan ini
+    handlePaymentChange();
 };
 </script>
 </body>
