@@ -440,6 +440,12 @@
             }
         };
 
+        // Fungsi untuk generate Barcode ID
+        function generateBarcodeId() {
+            const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+            return 'SS' + randomPart;
+        }
+
 // === DOM Elements ===
 const form = document.getElementById('orderForm');
 const produkSelect = document.getElementById('produk');
@@ -674,6 +680,9 @@ async function handleSubmit(e) {
         const formData = new FormData(form);
         const buktiFile = fileInput.files[0];
 
+        // Generate barcode ID
+        const barcodeId = generateBarcodeId();
+
         let currentPrice = 0;
         if (selectedProduct === 'kta') {
             const ktaType = ktaTypeSelect.value;
@@ -694,6 +703,7 @@ async function handleSubmit(e) {
         }
 
         formData.append('totalPrice', currentPrice);
+        formData.append('barcodeId', barcodeId); // Tambahkan barcode ID ke form data
 
         if (buktiFile) {
             const base64File = await convertFileToBase64(buktiFile);
@@ -707,7 +717,7 @@ async function handleSubmit(e) {
             formDataJson[key] = value;
         });
 
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbxDsZ2qcIdDp8eRq-0a4utxsEZQZ6dvIOdKN-3TIvafb8OafZ-o6Gz383s-IHX4kPxs/exec';
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbwMgJQqZECEWml9t1ODi2EJRC0C1cw06vWE182-TVCS6sdO0BApsOmbiUtU2SqeRIyI/exec';
 
         await fetch(scriptUrl, {
             method: 'POST',
@@ -725,9 +735,11 @@ async function handleSubmit(e) {
     produk: formData.get('produk') || '',
     metodePembayaran: formData.get('payment') || '',
     timestamp: new Date().toLocaleString('id-ID'),
-    totalPrice: currentPrice
+    totalPrice: currentPrice,
+    barcodeId: barcodeId // Simpan barcode ID untuk digunakan di halaman thanks
 };
         localStorage.setItem('orderSummary', JSON.stringify(orderSummary));
+        localStorage.setItem('currentBarcodeId', barcodeId); // Simpan untuk konsistensi
         window.location.href = 'thanks.html';
     } catch (error) {
         console.error('Error:', error);
