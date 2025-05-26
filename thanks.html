@@ -17,25 +17,25 @@
             padding: 20px;
         }
         .receipt {
-    background: #fff;
-    width: 100%;
-    max-width: 400px;
-    padding: 30px 20px 50px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    clip-path: polygon(
-        0 5%, 
-        5% 0, 10% 5%, 15% 0, 20% 5%, 25% 0, 30% 5%, 35% 0, 40% 5%, 45% 0,
-        50% 5%, 55% 0, 60% 5%, 65% 0, 70% 5%, 75% 0, 80% 5%, 85% 0, 90% 5%, 95% 0, 100% 5%,
-        100% 97%, 
-        95% 100%, 90% 97%, 85% 100%, 80% 97%, 75% 100%, 70% 97%, 65% 100%, 60% 97%, 55% 100%, 
-        50% 97%, 45% 100%, 40% 97%, 35% 100%, 30% 97%, 25% 100%, 20% 97%, 15% 100%, 10% 97%, 5% 100%, 0 97%
-    );
-    overflow: hidden;
-}
+            background: #fff;
+            width: 100%;
+            max-width: 400px;
+            padding: 30px 20px 50px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            clip-path: polygon(
+                0 5%, 
+                5% 0, 10% 5%, 15% 0, 20% 5%, 25% 0, 30% 5%, 35% 0, 40% 5%, 45% 0,
+                50% 5%, 55% 0, 60% 5%, 65% 0, 70% 5%, 75% 0, 80% 5%, 85% 0, 90% 5%, 95% 0, 100% 5%,
+                100% 97%, 
+                95% 100%, 90% 97%, 85% 100%, 80% 97%, 75% 100%, 70% 97%, 65% 100%, 60% 97%, 55% 100%, 
+                50% 97%, 45% 100%, 40% 97%, 35% 100%, 30% 97%, 25% 100%, 20% 97%, 15% 100%, 10% 97%, 5% 100%, 0 97%
+            );
+            overflow: hidden;
+        }
         .logo {
             display: block;
             margin: 0 auto 20px;
-            margin-top: 10px;
+            margin-top: 30px;
             max-width: 120px;
         }
         .checkmark {
@@ -97,10 +97,17 @@
             margin-bottom: 0;
         }
         .summary-item.total {
-    font-size: 1.2em;
-    font-weight: bold;
-    justify-content: space-between;
-}
+            font-size: 1.2em;
+            font-weight: bold;
+            justify-content: space-between;
+        }
+        .barcode-id {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #333;
+            margin-top: 5px;
+            font-weight: bold;
+        }
         button {
             display: block;
             width: 100%;
@@ -116,6 +123,14 @@
         }
         button:hover {
             background: #084e8a;
+        }
+        .share-btn {
+            background: #fff;
+            color: #0a74da;
+            border: 2px solid #0a74da;
+        }
+        .share-btn:hover {
+            background: #f0f8ff;
         }
         @media (max-width: 480px) {
             .receipt {
@@ -139,7 +154,7 @@
     </style>
 </head>
 <body>
-    <div class="receipt">
+    <div class="receipt" id="receipt">
         <img src="https://i.imgur.com/9rAb7r7.png" alt="Logo Komunitas" class="logo" />
         <div class="checkmark">
             <svg viewBox="0 0 52 52">
@@ -150,77 +165,194 @@
         <p class="subtitle">Pembayaran Anda telah kami terima dengan sukses. Kami akan segera memproses pembayaran Anda.</p>
 
         <div class="summary">
-    <div class="summary-item"><strong>Nama:</strong> <span id="nama">-</span></div>
-    <div class="summary-item"><strong>NIA:</strong> <span id="nia">-</span></div>
-    <div class="summary-item"><strong>Produk:</strong> <span id="produk">-</span></div>
-    <div class="summary-item"><strong>Metode Pembayaran:</strong> <span id="metode">-</span></div>
-    <div class="summary-item"><strong>Tanggal:</strong> <span id="tanggal">-</span></div>
-    <div class="summary-item"><strong>Jam:</strong> <span id="jam">-</span></div>
+            <div class="summary-item"><strong>Nama:</strong> <span id="nama">-</span></div>
+            <div class="summary-item"><strong>NIA:</strong> <span id="nia">-</span></div>
+            <div class="summary-item"><strong>Produk:</strong> <span id="produk">-</span></div>
+            <div class="summary-item"><strong>Metode Pembayaran:</strong> <span id="metode">-</span></div>
+            <div class="summary-item"><strong>Tanggal:</strong> <span id="tanggal">-</span></div>
+            <div class="summary-item"><strong>Jam:</strong> <span id="jam">-</span></div>
 
-    <hr style="border: none; border-top: 2px dashed #ccc; margin: 20px 0;" />
+            <hr style="border: none; border-top: 2px dashed #ccc; margin: 20px 0;" />
 
-    <div class="summary-item total">
-        <strong>Total:</strong> <span id="total">Rp0</span>
-    </div>
-</div>
+            <div class="summary-item total">
+                <strong>Total:</strong> <span id="total">Rp0</span>
+            </div>
+        </div>
 
+        <!-- Barcode -->
+        <div style="text-align: center; margin: 20px 0;">
+            <svg id="barcode"></svg>
+            <div class="barcode-id" id="barcodeId">-</div>
+        </div>
+
+        <button onclick="shareToWhatsApp()" class="share-btn">📱 Bagikan ke WhatsApp</button>
         <button onclick="window.location.href='pembayaran.html'">Kembali ke Halaman Pembayaran</button>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
     <script>
         function toTitleCase(str) {
-    return str.toLowerCase().split(' ').map(function(word) {
-        return word.charAt(0).toUpperCase() + word.slice(1);
-    }).join(' ');
-}
+            return str.toLowerCase().split(' ').map(function(word) {
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            }).join(' ');
+        }
 
-function formatRupiah(angka) {
-    return new Intl.NumberFormat('id-ID', { 
-        style: 'currency', 
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(angka);
-}
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', { 
+                style: 'currency', 
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(angka);
+        }
 
-const orderData = JSON.parse(localStorage.getItem('orderSummary'));
+        function generateBarcodeId() {
+            const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+            return 'SS' + randomPart;
+        }
 
-if (orderData) {
-    document.getElementById('nama').textContent = orderData.nama || '-';
-    document.getElementById('nia').textContent = orderData.nia || '-';
-    document.getElementById('produk').textContent = orderData.produk ? toTitleCase(orderData.produk) : '-';
-    document.getElementById('metode').textContent = orderData.metodePembayaran || '-';
+        // Generate atau ambil barcode ID
+        let barcodeId = localStorage.getItem('currentBarcodeId');
+        if (!barcodeId) {
+            barcodeId = generateBarcodeId();
+            localStorage.setItem('currentBarcodeId', barcodeId);
+        }
 
-    // Tanggal & Jam
-    if (orderData.timestamp) {
-        const match = orderData.timestamp.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{2})\.(\d{2})\.(\d{2})/);
+        // Generate barcode
+        JsBarcode("#barcode", barcodeId, {
+            format: "CODE128",
+            width: 2,
+            height: 80,
+            displayValue: false,
+            margin: 10,
+            background: "#ffffff",
+            lineColor: "#000000"
+        });
 
-        if (match) {
-            const [ , day, month, year, hour, minute, second ] = match;
-            const isoString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour}:${minute}:${second}`;
-            const dateObj = new Date(isoString);
+        // Display barcode ID
+        document.getElementById('barcodeId').textContent = barcodeId;
 
-            if (!isNaN(dateObj.getTime())) {
-                const options = { day: 'numeric', month: 'short', year: 'numeric' };
-                const tanggal = dateObj.toLocaleDateString('id-ID', options);
-                const jam = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                document.getElementById('tanggal').textContent = tanggal;
-                document.getElementById('jam').textContent = jam;
+        // Ambil data dari localStorage seperti kode asli
+        const orderData = JSON.parse(localStorage.getItem('orderSummary'));
+
+        if (orderData) {
+            // Tambahkan barcodeId ke orderData dan simpan kembali
+            orderData.barcodeId = barcodeId;
+            localStorage.setItem('orderSummary', JSON.stringify(orderData));
+
+            document.getElementById('nama').textContent = orderData.nama || '-';
+            document.getElementById('nia').textContent = orderData.nia || '-';
+            document.getElementById('produk').textContent = orderData.produk ? toTitleCase(orderData.produk) : '-';
+            document.getElementById('metode').textContent = orderData.metodePembayaran || '-';
+
+            // Perbaikan untuk Tanggal & Jam yang lebih robust
+            if (orderData.timestamp) {
+                try {
+                    let date;
+                    
+                    // Parsing format DD/MM/YYYY HH.MM.SS
+                    const match = orderData.timestamp.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{2})\.(\d{2})\.(\d{2})/);
+                    
+                    if (match) {
+                        const [, day, month, year, hour, minute, second] = match;
+                        // Buat date object dengan format yang benar
+                        date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(minute), parseInt(second));
+                    } else {
+                        // Jika format tidak sesuai, coba parsing langsung
+                        date = new Date(orderData.timestamp);
+                    }
+
+                    // Jika parsing berhasil
+                    if (!isNaN(date.getTime())) {
+                        // Format tanggal dengan locale Indonesia dan timezone Asia/Jakarta
+                        const optionsTanggal = { 
+                            day: 'numeric', 
+                            month: 'short', 
+                            year: 'numeric',
+                            timeZone: 'Asia/Jakarta'
+                        };
+                        
+                        const optionsJam = { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: false,
+                            timeZone: 'Asia/Jakarta'
+                        };
+
+                        const tanggal = date.toLocaleDateString('id-ID', optionsTanggal);
+                        const jam = date.toLocaleTimeString('id-ID', optionsJam);
+                        
+                        document.getElementById('tanggal').textContent = tanggal;
+                        document.getElementById('jam').textContent = jam;
+                    } else {
+                        // Fallback jika parsing gagal
+                        const now = new Date();
+                        document.getElementById('tanggal').textContent = now.toLocaleDateString('id-ID', { 
+                            day: 'numeric', 
+                            month: 'short', 
+                            year: 'numeric',
+                            timeZone: 'Asia/Jakarta'
+                        });
+                        document.getElementById('jam').textContent = now.toLocaleTimeString('id-ID', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: false,
+                            timeZone: 'Asia/Jakarta'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error parsing timestamp:', error);
+                    // Fallback ke waktu sekarang
+                    const now = new Date();
+                    document.getElementById('tanggal').textContent = now.toLocaleDateString('id-ID', { 
+                        day: 'numeric', 
+                        month: 'short', 
+                        year: 'numeric',
+                        timeZone: 'Asia/Jakarta'
+                    });
+                    document.getElementById('jam').textContent = now.toLocaleTimeString('id-ID', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: false,
+                        timeZone: 'Asia/Jakarta'
+                    });
+                }
             } else {
                 document.getElementById('tanggal').textContent = '-';
                 document.getElementById('jam').textContent = '-';
             }
-        } else {
-            document.getElementById('tanggal').textContent = '-';
-            document.getElementById('jam').textContent = '-';
-        }
-    }
 
-    // TOTAL: ambil dari orderData.totalPrice
-if (orderData.totalPrice) {
-    document.getElementById('total').textContent = formatRupiah(orderData.totalPrice);
-}
-}
-    </script>
+            // TOTAL: ambil dari orderData.totalPrice
+            if (orderData.totalPrice) {
+                document.getElementById('total').textContent = formatRupiah(orderData.totalPrice);
+            }
+        }
+
+        // Fungsi bagikan ke WhatsApp
+        function shareToWhatsApp() {
+            const nama = document.getElementById('nama').textContent;
+            const produk = document.getElementById('produk').textContent;
+            const total = document.getElementById('total').textContent;
+            const metode = document.getElementById('metode').textContent;
+            const tanggal = document.getElementById('tanggal').textContent;
+            const jam = document.getElementById('jam').textContent;
+            
+            const message = `🧾 *BUKTI PEMBAYARAN*\n\n` +
+                          `👤 Nama: ${nama}\n` +
+                          `📦 Produk: ${produk}\n` +
+                          `💰 Total: ${total}\n` +
+                          `💳 Metode: ${metode}\n` +
+                          `📅 Tanggal: ${tanggal}\n` +
+                          `🕐 Jam: ${jam}\n` +
+                          `🔖 Barcode ID: ${barcodeId}\n\n` +
+                          `✅ Pembayaran telah berhasil diproses.\n` +
+                          `Terima kasih atas kepercayaan Anda!`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/6282112964343?text=${encodedMessage}`;
+            
+            window.open(whatsappUrl, '_blank');
+        }
+  </script>
 </body>
 </html>
