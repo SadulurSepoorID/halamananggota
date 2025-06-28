@@ -309,9 +309,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="whatsapp">Nomor WhatsApp</label>
-                    <input type="text" id="whatsapp" name="whatsapp" required placeholder="Masukkan nomor WhatsApp Anda">
-                </div>
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required placeholder="Masukkan email Anda">
+</div>
 
                 <div class="form-group">
                     <label for="produk">Jenis Pembayaran</label>
@@ -467,7 +467,7 @@ const submitBtn = document.getElementById('submitBtn');
 const loading = document.getElementById('loading');
 const notification = document.getElementById('notification');
 const niaInput = document.getElementById('nia');
-const whatsappInput = document.getElementById('whatsapp');
+const emailInput = document.getElementById('email');
 const uangKasNominal = document.getElementById('uangKasNominal');
 const uangKasGroup = document.getElementById('uangKasGroup');
 
@@ -483,7 +483,7 @@ uploadArea.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', handleFileUpload);
 form.addEventListener('submit', handleSubmit);
 niaInput.addEventListener('blur', formatNIA);
-whatsappInput.addEventListener('blur', formatWhatsApp);
+emailInput.addEventListener('blur', validateEmail);
 uangKasNominal.addEventListener('input', calculatePrice);
 
 // ============================
@@ -518,16 +518,17 @@ function formatNIA() {
 }
 
 // Format WhatsApp number to 628... format
-function formatWhatsApp() {
-    let value = whatsappInput.value.trim();
-    if (value) {
-        value = value.replace(/\D/g, '');
-        value = value.replace(/^0+/, '');
-        if (!value.startsWith('62')) {
-            value = '62' + value;
-        }
-        whatsappInput.value = value;
+function validateEmail() {
+    const email = emailInput.value.trim();
+    if (email && !isValidEmail(email)) {
+        showNotification('Format email tidak valid', 'error');
+        emailInput.focus();
     }
+}
+
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
 }
 
 // Handle product selection
@@ -733,15 +734,15 @@ async function handleSubmit(e) {
 
         // Siapkan data yang akan dikirim ke Google Apps Script
         const submitData = {
-            nama: formData.get('nama'),
-            nia: formData.get('nia'),
-            whatsapp: formData.get('whatsapp'),
-            produk: formData.get('produk'),
-            payment: formData.get('payment'),
-            totalPrice: currentPrice,
-            barcodeId: barcodeId,
-            timestamp: new Date().toISOString()
-        };
+    nama: formData.get('nama'),
+    nia: formData.get('nia'),
+    email: formData.get('email'), // Ubah dari whatsapp
+    produk: formData.get('produk'),
+    payment: formData.get('payment'),
+    totalPrice: currentPrice,
+    barcodeId: barcodeId,
+    timestamp: new Date().toISOString()
+};
 
         // Tambahkan data spesifik produk
         if (selectedProduct === 'kemeja') {
@@ -769,22 +770,23 @@ async function handleSubmit(e) {
 
         // === PERBAIKAN UTAMA: SIMPAN DATA UNTUK HALAMAN THANKS ===
         const orderSummary = {
-            nama: document.getElementById('nama').value || '',
-            nia: document.getElementById('nia').value || '',
-            produk: selectedProduct || '',
-            metodePembayaran: document.getElementById('payment').value || '',
-            timestamp: new Date().toLocaleString('id-ID', {
-                timeZone: 'Asia/Jakarta',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            }).replace(/\./g, ':'), // Ganti titik dengan titik dua untuk jam
-            totalPrice: currentPrice,
-            barcodeId: barcodeId
-        };
+    nama: document.getElementById('nama').value || '',
+    nia: document.getElementById('nia').value || '',
+    email: document.getElementById('email').value || '', // Ubah dari whatsapp
+    produk: selectedProduct || '',
+    metodePembayaran: document.getElementById('payment').value || '',
+    timestamp: new Date().toLocaleString('id-ID', {
+        timeZone: 'Asia/Jakarta',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    }).replace(/\./g, ':'),
+    totalPrice: currentPrice,
+    barcodeId: barcodeId
+};
 
         console.log('Data yang akan disimpan:', orderSummary); // Debug
 
@@ -799,7 +801,7 @@ async function handleSubmit(e) {
         }
 
         // Kirim ke Google Apps Script
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbySS6ScrNLq8IAcCCsXODiwh6ca45qyVkTbd_1jccrHGn0mWLZ78IXbxMVJd-FA0-Q/exec';
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbwfxhJ7q8WuPwJ18l4yBHrYsZy6xHCBdi--EJxCpXw0Qa_AB0fv5_xQr1Wep3o_N2-_/exec';
 
         const response = await fetch(scriptUrl, {
             method: 'POST',
